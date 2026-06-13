@@ -1,0 +1,94 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # --- H2 IN-MEMORY DATABASE (Zero Configuration, perfect for sharing) ---
+    url: jdbc:h2:mem:pos_db;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH
+    username: sa
+    password: 
+    driver-class-name: org.h2.Driver
+    
+    # --- MYSQL DATABASE (Uncomment this and comment H2 for Production) ---
+    # url: ${DB_URL:jdbc:mysql://localhost:3306/pos_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    # username: ${DB_USERNAME:root}
+    # password: ${DB_PASSWORD:Sahu@177}
+    # driver-class-name: com.mysql.cj.jdbc.Driver
+    
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+      
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: sahuprince176@gmail.com
+    password: ujkkjplfwuwvdfbi
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+        debug: false
+
+# JWT Configuration
+jwt:
+  secret: 5f4dcc3b5aa765d61d8327deb882cf993b84a3c8d7e5f1a2b3c4d5e6f7a8b9c0
+  expiration: 86400000  # 24 hours in milliseconds
+
+# App Email Settings
+app:
+  mail:
+    from: sahuprince176@gmail.com       
+    otp-expiry-minutes: 10
+
+# SpringDoc / Swagger UI
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+
+# CORS — allowed origins for React dev server
+cors:
+  allowed-origins: http://localhost:5173,http://localhost:3000
+
+logging:
+  level:
+    root: INFO
+    com.pos: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql: WARN
