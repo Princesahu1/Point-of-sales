@@ -9,6 +9,7 @@ INSERT INTO users (username, email, password_hash, role, approved, approved_at) 
 ('cashier', 'cashier@pos.com', '$2a$10$wUOgENCoxkPgnErKdK1OXO7eLrmPv9zsNRMGlH4ZJ5WK.WjCuVoSa', 'CASHIER',          TRUE, NOW());
 
 UPDATE users SET approved=TRUE, approved_at=NOW() WHERE approved=FALSE AND created_at IS NULL;
+UPDATE users SET password_hash='$2a$10$wUOgENCoxkPgnErKdK1OXO7eLrmPv9zsNRMGlH4ZJ5WK.WjCuVoSa' WHERE username IN ('admin', 'manager', 'cashier');
 
 INSERT INTO products (name, barcode, category, price, tax_rate) VALUES
 ('Basmati Rice 1kg', 'GRO001', 'Grocery', 15.02, 5.00),
