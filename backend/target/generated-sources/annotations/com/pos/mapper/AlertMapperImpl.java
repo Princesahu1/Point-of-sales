@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-13T17:39:06+0530",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.17 (Eclipse Adoptium)"
+    date = "2026-06-13T19:15:05+0530",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 24.0.1 (Oracle Corporation)"
 )
 @Component
 public class AlertMapperImpl implements AlertMapper {
@@ -30,8 +30,8 @@ public class AlertMapperImpl implements AlertMapper {
         alertDTO.barcode( alertInventoryItemProductBarcode( alert ) );
         alertDTO.currentQuantity( alertInventoryItemQuantityOnHand( alert ) );
         alertDTO.reorderThreshold( alertInventoryItemReorderThreshold( alert ) );
-        alertDTO.id( alert.getId() );
         alertDTO.alertedAt( alert.getAlertedAt() );
+        alertDTO.id( alert.getId() );
         alertDTO.resolved( alert.isResolved() );
 
         return alertDTO.build();

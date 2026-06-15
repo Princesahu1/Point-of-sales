@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-13T17:39:06+0530",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.17 (Eclipse Adoptium)"
+    date = "2026-06-13T19:15:06+0530",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 24.0.1 (Oracle Corporation)"
 )
 @Component
 public class InventoryMapperImpl implements InventoryMapper {
@@ -28,9 +28,9 @@ public class InventoryMapperImpl implements InventoryMapper {
         inventoryDTO.productName( itemProductName( item ) );
         inventoryDTO.barcode( itemProductBarcode( item ) );
         inventoryDTO.id( item.getId() );
+        inventoryDTO.lastUpdated( item.getLastUpdated() );
         inventoryDTO.quantityOnHand( item.getQuantityOnHand() );
         inventoryDTO.reorderThreshold( item.getReorderThreshold() );
-        inventoryDTO.lastUpdated( item.getLastUpdated() );
 
         inventoryDTO.belowThreshold( item.getQuantityOnHand() <= item.getReorderThreshold() );
 

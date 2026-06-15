@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-13T17:39:06+0530",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.17 (Eclipse Adoptium)"
+    date = "2026-06-13T19:15:06+0530",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 24.0.1 (Oracle Corporation)"
 )
 @Component
 public class ProductMapperImpl implements ProductMapper {
@@ -23,13 +23,13 @@ public class ProductMapperImpl implements ProductMapper {
 
         ProductDTO.ProductDTOBuilder productDTO = ProductDTO.builder();
 
-        productDTO.id( product.getId() );
-        productDTO.name( product.getName() );
         productDTO.barcode( product.getBarcode() );
         productDTO.category( product.getCategory() );
+        productDTO.createdAt( product.getCreatedAt() );
+        productDTO.id( product.getId() );
+        productDTO.name( product.getName() );
         productDTO.price( product.getPrice() );
         productDTO.taxRate( product.getTaxRate() );
-        productDTO.createdAt( product.getCreatedAt() );
         productDTO.updatedAt( product.getUpdatedAt() );
 
         return productDTO.build();
@@ -43,13 +43,13 @@ public class ProductMapperImpl implements ProductMapper {
 
         Product.ProductBuilder product = Product.builder();
 
-        product.id( productDTO.getId() );
-        product.name( productDTO.getName() );
         product.barcode( productDTO.getBarcode() );
         product.category( productDTO.getCategory() );
+        product.createdAt( productDTO.getCreatedAt() );
+        product.id( productDTO.getId() );
+        product.name( productDTO.getName() );
         product.price( productDTO.getPrice() );
         product.taxRate( productDTO.getTaxRate() );
-        product.createdAt( productDTO.getCreatedAt() );
         product.updatedAt( productDTO.getUpdatedAt() );
 
         return product.build();
@@ -75,13 +75,13 @@ public class ProductMapperImpl implements ProductMapper {
             return;
         }
 
-        product.setId( productDTO.getId() );
-        product.setName( productDTO.getName() );
         product.setBarcode( productDTO.getBarcode() );
         product.setCategory( productDTO.getCategory() );
+        product.setCreatedAt( productDTO.getCreatedAt() );
+        product.setId( productDTO.getId() );
+        product.setName( productDTO.getName() );
         product.setPrice( productDTO.getPrice() );
         product.setTaxRate( productDTO.getTaxRate() );
-        product.setCreatedAt( productDTO.getCreatedAt() );
         product.setUpdatedAt( productDTO.getUpdatedAt() );
     }
 }

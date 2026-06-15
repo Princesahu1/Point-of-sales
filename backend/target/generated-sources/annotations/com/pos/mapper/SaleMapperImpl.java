@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-06-13T17:39:06+0530",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 17.0.17 (Eclipse Adoptium)"
+    date = "2026-06-13T19:15:06+0530",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.46.0.v20260407-0427, environment: Java 24.0.1 (Oracle Corporation)"
 )
 @Component
 public class SaleMapperImpl implements SaleMapper {
@@ -29,11 +29,11 @@ public class SaleMapperImpl implements SaleMapper {
 
         saleResponseDTO.cashierUsername( saleCashierUsername( sale ) );
         saleResponseDTO.items( toSaleItemDTOList( sale.getItems() ) );
+        saleResponseDTO.createdAt( sale.getCreatedAt() );
         saleResponseDTO.id( sale.getId() );
-        saleResponseDTO.totalAmount( sale.getTotalAmount() );
         saleResponseDTO.paymentMethod( sale.getPaymentMethod() );
         saleResponseDTO.status( sale.getStatus() );
-        saleResponseDTO.createdAt( sale.getCreatedAt() );
+        saleResponseDTO.totalAmount( sale.getTotalAmount() );
 
         return saleResponseDTO.build();
     }
@@ -50,8 +50,8 @@ public class SaleMapperImpl implements SaleMapper {
         saleItemDTO.productName( saleItemProductName( saleItem ) );
         saleItemDTO.id( saleItem.getId() );
         saleItemDTO.quantity( saleItem.getQuantity() );
-        saleItemDTO.unitPrice( saleItem.getUnitPrice() );
         saleItemDTO.subtotal( saleItem.getSubtotal() );
+        saleItemDTO.unitPrice( saleItem.getUnitPrice() );
 
         return saleItemDTO.build();
     }

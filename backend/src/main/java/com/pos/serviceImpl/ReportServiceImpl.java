@@ -66,9 +66,9 @@ public class ReportServiceImpl implements ReportService {
         long cashTransactions = sales.stream()
                 .filter(s -> s.getPaymentMethod().name().equals("CASH")).count();
         long cardTransactions = sales.stream()
-                .filter(s -> s.getPaymentMethod().name().equals("CARD")).count();
+                .filter(s -> s.getPaymentMethod().name().equals("CARD") || s.getPaymentMethod().name().equals("CREDIT")).count();
         long upiTransactions = sales.stream()
-                .filter(s -> s.getPaymentMethod().name().equals("UPI")).count();
+                .filter(s -> s.getPaymentMethod().name().equals("UPI") || s.getPaymentMethod().name().equals("QR") || s.getPaymentMethod().name().equals("WALLET")).count();
         long refundedTransactions = sales.stream()
                 .filter(s -> s.getStatus() == SaleStatus.REFUNDED).count();
 
