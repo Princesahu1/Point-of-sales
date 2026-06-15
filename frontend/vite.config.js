@@ -18,8 +18,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 10000,
     rolldownOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom', 'axios', 'recharts', 'lucide-react']
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            return 'vendor';
+          }
         }
       }
     }
