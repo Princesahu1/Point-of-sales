@@ -6,7 +6,7 @@ import axios from 'axios';
  * The Vite proxy (vite.config.js) routes /api/* → http://localhost:8080/api/*
  */
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: import.meta.env.VITE_API_URL || '/api',
   headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 });
