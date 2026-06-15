@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS sales (
     id             BIGINT AUTO_INCREMENT PRIMARY KEY,
     cashier_id     BIGINT         NOT NULL,
     total_amount   DECIMAL(12,2)  NOT NULL,
-    payment_method ENUM('CASH','CARD','UPI') NOT NULL,
+    payment_method ENUM('CASH','CARD','UPI','QR','WALLET','CREDIT') NOT NULL,
     status         ENUM('COMPLETED','REFUNDED') NOT NULL DEFAULT 'COMPLETED',
     created_at     DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_total_amount CHECK (total_amount >= 0),
