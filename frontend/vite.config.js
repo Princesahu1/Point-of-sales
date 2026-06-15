@@ -15,15 +15,6 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 10000,
-    rolldownOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return 'vendor';
-          }
-        }
-      }
-    }
+    chunkSizeWarningLimit: 1000, // Set limit in kB (e.g., 1000 = 1MB)
   }
 })
