@@ -11,11 +11,17 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        secure: false,
       },
     },
   },
   build: {
-    chunkSizeWarningLimit: 1600,
-  },
+    chunkSizeWarningLimit: 10000,
+    rolldownOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom', 'axios', 'recharts', 'lucide-react']
+        }
+      }
+    }
+  }
 })
