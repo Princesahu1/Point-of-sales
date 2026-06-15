@@ -5,51 +5,50 @@ import {
   CreditCard, Banknote, QrCode, Tag, Bookmark,
   Briefcase, Printer, Users, Zap, X, ChevronDown,
   ReceiptText, UtensilsCrossed, Coffee, Cookie,
-  Salad, Soup, Package
+  Salad, Soup, Package, Wallet
 } from 'lucide-react';
 
-/* ─────────────────────────── sample catalogue ─────────────────────────── */
-const CATALOGUE = [
-  { id: 1,  name: 'Butter Chicken',    price: 320, cat: 'Mains',    emoji: '🍛', hot: true  },
-  { id: 2,  name: 'Paneer Tikka',      price: 280, cat: 'Starters', emoji: '🧆', hot: false },
-  { id: 3,  name: 'Dal Makhani',       price: 220, cat: 'Mains',    emoji: '🥘', hot: false },
-  { id: 4,  name: 'Garlic Naan',       price:  60, cat: 'Breads',   emoji: '🫓', hot: false },
-  { id: 5,  name: 'Mango Lassi',       price: 120, cat: 'Drinks',   emoji: '🥛', hot: false },
-  { id: 6,  name: 'Veg Biryani',       price: 260, cat: 'Mains',    emoji: '🍚', hot: false },
-  { id: 7,  name: 'Masala Chai',       price:  50, cat: 'Drinks',   emoji: '☕', hot: false },
-  { id: 8,  name: 'Samosa (2 pcs)',    price:  80, cat: 'Starters', emoji: '🥟', isNew: true },
-  { id: 9,  name: 'Boondi Raita',      price:  70, cat: 'Sides',    emoji: '🥣', hot: false },
-  { id: 10, name: 'Chocolate Brownie', price: 180, cat: 'Desserts', emoji: '🍫', isNew: true },
-  { id: 11, name: 'Chicken Biryani',   price: 340, cat: 'Mains',    emoji: '🍗', hot: true  },
-  { id: 12, name: 'Tandoori Roti',     price:  45, cat: 'Breads',   emoji: '🫓', hot: false },
-  { id: 13, name: 'Cold Coffee',       price: 130, cat: 'Drinks',   emoji: '🧋', hot: false },
-  { id: 14, name: 'Gulab Jamun',       price: 100, cat: 'Desserts', emoji: '🍮', hot: false },
-  { id: 15, name: 'Onion Bhaji',       price: 110, cat: 'Starters', emoji: '🧅', hot: false },
-  { id: 16, name: 'Pav Bhaji',         price: 160, cat: 'Mains',    emoji: '🍲', hot: false },
-  { id: 17, name: 'Masala Papad',      price:  40, cat: 'Starters', emoji: '🫓', hot: false },
-  { id: 18, name: 'Kulfi',             price:  90, cat: 'Desserts', emoji: '🍦', hot: false },
-];
-
-const CATEGORIES = ['All', 'Starters', 'Mains', 'Breads', 'Drinks', 'Sides', 'Desserts'];
-const TAX_RATE   = 0.05;
+import api from '../api/axios';
+import { searchProducts } from '../api/productApi';
+import { useCurrency } from '../context/CurrencyContext';
 
 const CAT_ICONS = {
   All:      <Package  size={14} />,
-  Starters: <Salad    size={14} />,
-  Mains:    <Soup     size={14} />,
-  Breads:   <UtensilsCrossed size={14} />,
-  Drinks:   <Coffee   size={14} />,
-  Sides:    <Salad    size={14} />,
-  Desserts: <Cookie   size={14} />,
+  Beverages:<Coffee   size={14} />,
+  Snacks:   <Cookie   size={14} />,
+  Grocery:  <Package  size={14} />,
+  Dairy:    <Soup     size={14} />,
+  'Personal Care': <Salad size={14} />,
+  Electronics: <Zap size={14} />,
+  Household: <UtensilsCrossed size={14} />,
+  Bakery:   <Cookie   size={14} />,
+  Clothing: <Tag size={14} />,
+  Other:    <Package size={14} />,
 };
 
-/* ──────────────────────────── helpers ──────────────────────────── */
-const fmt = (n) => `₹${Number(n).toFixed(2)}`;
+const getEmojiForCategory = (cat) => {
+  if (!cat) return '📦';
+  const map = {
+    Beverages: '🥤',
+    Snacks: '🥨',
+    Grocery: '🛒',
+    Dairy: '🥛',
+    'Personal Care': '🧼',
+    Electronics: '🔌',
+    Household: '🧽',
+    Bakery: '🥐',
+    Clothing: '👕',
+    Other: '📦'
+  };
+  return map[cat] || '📦';
+};
 
 /* ══════════════════════════════════════════════════════════════════
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════════════ */
 export default function POS() {
+  const { formatAmount } = useCurrency();
+
   /* state */
   const [query,       setQuery]       = useState('');
   const [activeCat,   setActiveCat]   = useState('All');
@@ -66,6 +65,27 @@ export default function POS() {
   const [notes,       setNotes]       = useState('');
   const searchRef = useRef(null);
 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState(['All']);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await searchProducts('');
+        const data = res.data?.content || res.data || [];
+        setProducts(data);
+        const uniqueCats = ['All', ...new Set(data.map(p => p.category).filter(Boolean))];
+        setCategories(uniqueCats);
+      } catch (err) {
+        toast.error('Failed to load products');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
   /* clock */
   useEffect(() => {
     const tick = () =>
@@ -76,8 +96,8 @@ export default function POS() {
   }, []);
 
   /* filtered products */
-  const filtered = CATALOGUE.filter(p => {
-    const matchCat = activeCat === 'All' || p.cat === activeCat;
+  const filtered = products.filter(p => {
+    const matchCat = activeCat === 'All' || p.category === activeCat;
     const matchQ   = !query || p.name.toLowerCase().includes(query.toLowerCase());
     return matchCat && matchQ;
   });
@@ -92,6 +112,38 @@ export default function POS() {
       return [...prev, { ...product, qty: 1 }];
     });
   }, []);
+
+  /* Barcode Scanner Listener */
+  useEffect(() => {
+    let barcodeBuffer = '';
+    let lastKeyTime = Date.now();
+
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      const currentTime = Date.now();
+      if (currentTime - lastKeyTime > 50) barcodeBuffer = '';
+      lastKeyTime = currentTime;
+
+      if (e.key === 'Enter') {
+        if (barcodeBuffer.length > 2) {
+          const matched = products.find(p => p.barcode === barcodeBuffer || p.name.toLowerCase() === barcodeBuffer.toLowerCase());
+          if (matched) {
+            addItem(matched);
+            toast.success(`Added ${matched.name}`);
+          } else {
+            toast.error(`Barcode not found: ${barcodeBuffer}`);
+          }
+        }
+        barcodeBuffer = '';
+      } else if (e.key.length === 1) {
+        barcodeBuffer += e.key;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [products, addItem]);
 
   const changeQty = useCallback((id, delta) => {
     setCart(prev => {
@@ -109,7 +161,15 @@ export default function POS() {
   /* totals */
   const subtotal   = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const discAmt    = subtotal * (discount / 100);
-  const taxAmt     = (subtotal - discAmt) * TAX_RATE;
+  
+  const taxAmt = cart.reduce((totalTax, i) => {
+    const itemSubtotal = i.price * i.qty;
+    const itemDiscount = itemSubtotal * (discount / 100);
+    const itemNetPrice = itemSubtotal - itemDiscount;
+    const itemTax = itemNetPrice * ((i.taxRate || 0) / 100);
+    return totalTax + itemTax;
+  }, 0);
+
   const grandTotal = subtotal - discAmt + taxAmt;
   const totalItems = cart.reduce((s, i) => s + i.qty, 0);
 
@@ -134,11 +194,60 @@ export default function POS() {
     toast.success('Order voided');
   };
 
-  const processCharge = () => {
+  const processCharge = async () => {
     if (!cart.length) return;
-    toast.success(`Charged ${fmt(grandTotal)} via ${payMethod.toUpperCase()}`, { icon: '💳' });
-    setOrdersToday(n => n + 1);
-    clearCart();
+    try {
+      const items = cart.map(i => ({ productId: i.id, quantity: i.qty }));
+      await api.post('/sales', {
+        items,
+        paymentMethod: payMethod.toUpperCase()
+      });
+      toast.success(`Charged ${formatAmount(grandTotal)} via ${payMethod.toUpperCase()}`, { icon: '💳' });
+      setOrdersToday(n => n + 1);
+      clearCart();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to process sale');
+    }
+  };
+
+  const printBill = () => {
+    if (cart.length === 0) { toast.error('Cart is empty'); return; }
+    const printWindow = window.open('', '_blank');
+    const receiptHtml = `
+      <html><head><title>Receipt</title>
+      <style>
+        body { font-family: monospace; padding: 20px; max-width: 300px; margin: 0 auto; color: #000; }
+        .text-center { text-align: center; }
+        .divider { border-bottom: 1px dashed #000; margin: 10px 0; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 4px 0; font-size: 12px; }
+        th.right, td.right { text-align: right; }
+      </style></head><body>
+      <div class="text-center">
+        <h2>SwiftPOS</h2>
+        <p>Receipt</p>
+      </div>
+      <div class="divider"></div>
+      <table>
+        <thead><tr><th>Item</th><th class="right">Qty</th><th class="right">Total</th></tr></thead>
+        <tbody>
+          ${cart.map(i => `<tr><td>${i.name}</td><td class="right">${i.qty}</td><td class="right">${formatAmount(i.price * i.qty)}</td></tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="divider"></div>
+      <table>
+        <tr><td>Subtotal</td><td class="right">${formatAmount(subtotal)}</td></tr>
+        <tr><td>Discount</td><td class="right">-${formatAmount(discAmt)}</td></tr>
+        <tr><td>Tax</td><td class="right">${formatAmount(taxAmt)}</td></tr>
+        <tr><th><b>Total</b></th><th class="right"><b>${formatAmount(grandTotal)}</b></th></tr>
+      </table>
+      <div class="divider"></div>
+      <p class="text-center">Thank you!</p>
+      </body></html>
+    `;
+    printWindow.document.write(receiptHtml);
+    printWindow.document.close();
+    printWindow.print();
   };
 
   const openDrawer = () => toast.success('Cash drawer opened', { icon: '🗄️' });
@@ -212,13 +321,13 @@ export default function POS() {
 
           {/* categories */}
           <div style={S.catRow}>
-            {CATEGORIES.map(c => (
+            {categories.map(c => (
               <button
                 key={c}
                 style={{ ...S.catBtn, ...(activeCat === c ? S.catBtnActive : {}) }}
                 onClick={() => setActiveCat(c)}
               >
-                {CAT_ICONS[c]}
+                {CAT_ICONS[c] || <Package size={14} />}
                 {c}
               </button>
             ))}
@@ -318,13 +427,13 @@ export default function POS() {
 
           {/* totals */}
           <div style={S.totalsArea}>
-            <TotalRow label="Subtotal"          value={fmt(subtotal)} muted />
+            <TotalRow label="Subtotal"          value={formatAmount(subtotal)} muted />
             {discount > 0 && (
-              <TotalRow label={`Discount (${discount}%)`} value={`-${fmt(discAmt)}`} warn />
+              <TotalRow label={`Discount (${discount}%)`} value={`-${formatAmount(discAmt)}`} warn />
             )}
-            <TotalRow label="GST (5%)"           value={fmt(taxAmt)}  muted />
+            <TotalRow label="Tax"                value={formatAmount(taxAmt)}  muted />
             <div style={S.totalDivider} />
-            <TotalRow label="Total"              value={fmt(grandTotal)} grand />
+            <TotalRow label="Total"              value={formatAmount(grandTotal)} grand />
           </div>
 
           {/* payment methods */}
@@ -333,9 +442,11 @@ export default function POS() {
           </div>
           <div style={S.payGrid}>
             {[
-              { id: 'cash', label: 'Cash',  icon: <Banknote size={20} /> },
-              { id: 'card', label: 'Card',  icon: <CreditCard size={20} /> },
-              { id: 'upi',  label: 'UPI',   icon: <QrCode size={20} /> },
+              { id: 'cash',   label: 'Cash',    icon: <Banknote size={20} /> },
+              { id: 'card',   label: 'Card',    icon: <CreditCard size={20} /> },
+              { id: 'qr',     label: 'QR Code', icon: <QrCode size={20} /> },
+              { id: 'wallet', label: 'Wallet',  icon: <Wallet size={20} /> },
+              { id: 'credit', label: 'Credit',  icon: <Briefcase size={20} /> },
             ].map(m => (
               <button
                 key={m.id}
@@ -348,10 +459,22 @@ export default function POS() {
             ))}
           </div>
 
+          {/* QR Display */}
+          {payMethod === 'qr' && (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', margin: '10px 0' }}>
+              <div style={{ background: '#fff', padding: 10, borderRadius: 12 }}>
+                 <QrCode size={120} color="#000" />
+              </div>
+              <span style={{ fontSize: 13, marginTop: 8, color: '#9ca3af', fontWeight: 500 }}>
+                Scan to pay <strong style={{color: '#f3f4f6'}}>{formatAmount(grandTotal)}</strong>
+              </span>
+            </div>
+          )}
+
           {/* split / KOT */}
           <div style={{ display: 'flex', gap: 6, padding: '4px 16px 8px' }}>
             <button style={S.splitBtn}><Users size={13} /> Split bill</button>
-            <button style={S.splitBtn}><Printer size={13} /> Print KOT</button>
+            <button style={S.splitBtn} onClick={printBill}><Printer size={13} /> Print Bill</button>
           </div>
 
           {/* charge button */}
@@ -363,7 +486,7 @@ export default function POS() {
             >
               <Zap size={18} />
               <span>Charge</span>
-              {cart.length > 0 && <span style={{ fontSize: 14, opacity: .75 }}>· {fmt(grandTotal)}</span>}
+              {cart.length > 0 && <span style={{ fontSize: 14, opacity: .75 }}>· {formatAmount(grandTotal)}</span>}
             </button>
           </div>
 
@@ -397,7 +520,9 @@ export default function POS() {
 /* ══════════════════ SUB-COMPONENTS ══════════════════ */
 
 function ProductCard({ product, popping, onAdd }) {
+  const { formatAmount } = useCurrency();
   const [pressed, setPressed] = useState(false);
+  const emoji = product.emoji || getEmojiForCategory(product.category);
   return (
     <div
       style={{
@@ -421,22 +546,24 @@ function ProductCard({ product, popping, onAdd }) {
           {product.hot ? 'hot' : 'new'}
         </span>
       )}
-      <div style={{ fontSize: 28, textAlign: 'center', lineHeight: 1, marginBottom: 6 }}>{product.emoji}</div>
+      <div style={{ fontSize: 28, textAlign: 'center', lineHeight: 1, marginBottom: 6 }}>{emoji}</div>
       <div style={{ fontSize: 13, fontWeight: 500, color: '#e5e7eb', lineHeight: 1.3 }}>{product.name}</div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#22c55e', marginTop: 4 }}>{fmt(product.price)}</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#22c55e', marginTop: 4 }}>{formatAmount(product.price)}</div>
     </div>
   );
 }
 
 function OrderRow({ item, onInc, onDec, onDel }) {
+  const { formatAmount } = useCurrency();
+  const emoji = item.emoji || getEmojiForCategory(item.category);
   return (
     <div style={S.orderRow}>
-      <span style={{ fontSize: 20, flexShrink: 0 }}>{item.emoji}</span>
+      <span style={{ fontSize: 20, flexShrink: 0 }}>{emoji}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 500, color: '#e5e7eb', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {item.name}
         </div>
-        <div style={{ fontSize: 12, color: '#6b7280', marginTop: 1 }}>{fmt(item.price)} each</div>
+        <div style={{ fontSize: 12, color: '#6b7280', marginTop: 1 }}>{formatAmount(item.price)} each</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0 }}>
         <QtyBtn onClick={onDec}><Minus size={13} /></QtyBtn>
@@ -444,7 +571,7 @@ function OrderRow({ item, onInc, onDec, onDel }) {
         <QtyBtn onClick={onInc}><Plus size={13} /></QtyBtn>
       </div>
       <div style={{ fontSize: 14, fontWeight: 700, color: '#f3f4f6', minWidth: 60, textAlign: 'right', flexShrink: 0, fontVariantNumeric: 'tabular-nums' }}>
-        {fmt(item.price * item.qty)}
+        {formatAmount(item.price * item.qty)}
       </div>
       <button style={S.delBtn} onClick={onDel} aria-label={`Remove ${item.name}`}>
         <X size={14} />
@@ -551,10 +678,11 @@ const S = {
     display: 'grid',
     gridTemplateColumns: '1fr 320px 260px',
     overflow: 'hidden',
+    minHeight: 0,
   },
 
   /* left */
-  leftPane: { display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: '1px solid #1f2937', background: '#12141f' },
+  leftPane: { display: 'flex', flexDirection: 'column', overflow: 'hidden', borderRight: '1px solid #1f2937', background: '#12141f', minHeight: 0 },
   searchIcon: { position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#6b7280', pointerEvents: 'none' },
   searchInput: {
     width: '100%', padding: '9px 32px 9px 34px',
@@ -574,8 +702,9 @@ const S = {
   },
   catBtnActive: { background: '#22c55e', borderColor: '#22c55e', color: '#000', fontWeight: 600 },
   grid: {
-    flex: 1, overflowY: 'auto', padding: '4px 14px 14px',
+    flex: 1, minHeight: 0, overflowY: 'auto', padding: '4px 14px 14px',
     display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(128px,1fr))',
+    gridAutoRows: 'min-content',
     gap: 10, alignContent: 'start', scrollbarWidth: 'thin', scrollbarColor: '#1f2937 transparent',
   },
   productCard: {
@@ -585,6 +714,7 @@ const S = {
     display: 'flex', flexDirection: 'column', gap: 0,
     position: 'relative', overflow: 'hidden',
     userSelect: 'none', outline: 'none',
+    minHeight: 110,
   },
   productCardPressed: { transform: 'scale(.96)', borderColor: '#22c55e' },
   productCardPop:     { animation: 'none', transform: 'scale(1.04)' },
